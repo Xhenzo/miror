@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deface Mirror</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>DEFACE MIRROR</h1>
+            <p>Archive of defaced websites</p>
+        </div>
+        
+        <div class="upload-form">
+            <h2>ADD NEW DEFACE</h2>
+            <form id="defaceForm">
+                <div class="form-group">
+                    <input type="text" id="targetUrl" placeholder="Target URL (e.g. http://example.com)" required>
+                </div>
+                <div class="form-group">
+                    <input type="text" id="hackerName" placeholder="Hacker/Team Name">
+                </div>
+                <div class="form-group">
+                    <textarea id="defaceContent" placeholder="Deface content/message (HTML allowed)"></textarea>
+                </div>
+                <div class="form-group">
+                    <input type="text" id="screenshotUrl" placeholder="Screenshot URL (optional)">
+                </div>
+                <button type="submit">MIRROR DEFACE</button>
+            </form>
+        </div>
+        
+        <div class="mirror-list" id="mirrorList">
+            <!-- Deface entries will appear here -->
+            <div class="empty-message">No deface entries yet. Add one above.</div>
+        </div>
+        
+        <div class="footer">
+            <p>DEFACE MIRROR ARCHIVE | AUTO IP/COUNTRY DETECTION</p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('defaceForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const targetUrl = document.getElementById('targetUrl').value;
+            const hackerName = document.getElementById('hackerName').value;
+            const defaceContent = document.getElementById('defaceContent').value;
+            const screenshotUrl = document.getElementById('screenshotUrl').value;
+            
+            try {
+                // Get IP and country info (using ipapi.co free API)
+                const ipInfo = await fetch('https://ipapi.co/json/').then(res => res.json());
+                
+                // Create new mirror entry
+                addMirrorEntry({
+                    targetUrl,
+                    hackerName,
+                    defaceContent,
+                    screenshotUrl,
+                    ip: ipInfo.ip,
+                    country: ipInfo.country_name,
+                    timestamp: new Date().toISOString()
+                });
+                
+                // Reset form
+                this.reset();
+            } catch (error) {
+                console.error("Error getting IP info:", error);
+                // Fallback without IP info if API fails
+                addMirrorEntry({
+                    targetUrl,
+                    hackerName,
+                    defaceContent,
+                    screenshotUrl,
+                    ip: "Unknown",
+                    country: "Unknown",
+                    timestamp: new Date().toISOString()
+                });
+                this.reset();
+            }
+        });
+        
+        function addMirrorEntry(data) {
+            const mirrorList = document.getElementById('mirrorList');
+            const emptyMsg = mirrorList.querySelector('.empty-message');
+            
+            if (emptyMsg) {
+                mirrorList.removeChild(emptyMsg);
+            }
+            
+            const entry = document.createElement('div');
+            entry.className = 'mirror-entry';
+            
+            entry.innerHTML = `
+                <div class="entry-header">
+                    <span class="target-url">${data.targetUrl}</span>
+                    <span class="hacker-name">${data.hackerName || 'Anonymous'}</span>
+                </div>
+                <div class="entry-info">
+                    <span class="ip-info">IP: ${data.ip}</span>
+                    <span class="country-info">Country: ${data.country}</span>
+                    <span class="timestamp">${new Date(data.timestamp).toLocaleString()}</span>
+                </div>
+                ${data.screenshotUrl ? `
+                <div class="screenshot">
+                    <img src="${data.screenshotUrl}" alt="Deface screenshot" onerror="this.parentElement.style.display='none'">
+                </div>` : ''}
+                <div class="deface-content">
+                    ${data.defaceContent || 'No deface message provided.'}
+                </div>
+                <div class="entry-footer">
+                    <span class="mirror-label">MIRRORED</span>
+                </div>
+            `;
+            
+            mirrorList.prepend(entry);
+            saveToStorage(data);
+        }
+        
+        function saveToStorage(data) {
+            let entries = JSON.parse(localStorage.getItem('defaceMirrorEntries')) || [];
+            entries.unshift(data);
+            localStorage.setItem('defaceMirrorEntries', JSON.stringify(entries));
+        }
+        
+        function loadFromStorage() {
+            const entries = JSON.parse(localStorage.getItem('defaceMirrorEntries')) || [];
+            const mirrorList = document.getElementById('mirrorList');
+            
+            if (entries.length > 0) {
+                mirrorList.innerHTML = '';
+                
+                entries.forEach(entry => {
+                    const element = document.createElement('div');
+                    element.className = 'mirror-entry';
+                    
+                    element.innerHTML = `
+                        <div class="entry-header">
+                            <span class="target-url">${entry.targetUrl}</span>
+                            <span class="hacker-name">${entry.hackerName || 'Anonymous'}</span>
+                        </div>
+                        <div class="entry-info">
+                            <span class="ip-info">IP: ${entry.ip}</span>
+                            <span class="country-info">Country: ${entry.country}</span>
+                            <span class="timestamp">${new Date(entry.timestamp).toLocaleString()}</span>
+                        </div>
+                        ${entry.screenshotUrl ? `
+                        <div class="screenshot">
+                            <img src="${entry.screenshotUrl}" alt="Deface screenshot" onerror="this.parentElement.style.display='none'">
+                        </div>` : ''}
+                        <div class="deface-content">
+                            ${entry.defaceContent || 'No deface message provided.'}
+                        </div>
+                        <div class="entry-footer">
+                            <span class="mirror-label">MIRRORED</span>
+                        </div>
+                    `;
+                    
+                    mirrorList.appendChild(element);
+                });
+            }
+        }
+        
+        // Load saved entries when page loads
+        window.addEventListener('DOMContentLoaded', loadFromStorage);
+    </script>
+</body>
+</html>
