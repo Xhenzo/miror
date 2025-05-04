@@ -1,172 +1,335 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Deface Mirror</title>
+    <title>Deface Mirror Archive</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>DEFACE MIRROR</h1>
-            <p>Archive of defaced websites</p>
+        <header>
+            <h1>DEFACE MIRROR ARCHIVE</h1>
+            <p>Automated deface records with IP/Country detection</p>
+        </header>
+
+        <div class="control-panel">
+            <button id="addNewBtn">ADD NEW DEFACE</button>
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Search...">
+                <button id="searchBtn">Search</button>
+            </div>
         </div>
-        
-        <div class="upload-form">
-            <h2>ADD NEW DEFACE</h2>
-            <form id="defaceForm">
-                <div class="form-group">
-                    <input type="text" id="targetUrl" placeholder="Target URL (e.g. http://example.com)" required>
-                </div>
-                <div class="form-group">
-                    <input type="text" id="hackerName" placeholder="Hacker/Team Name">
-                </div>
-                <div class="form-group">
-                    <textarea id="defaceContent" placeholder="Deface content/message (HTML allowed)"></textarea>
-                </div>
-                <div class="form-group">
-                    <input type="text" id="screenshotUrl" placeholder="Screenshot URL (optional)">
-                </div>
-                <button type="submit">MIRROR DEFACE</button>
-            </form>
+
+        <div class="modal" id="addModal">
+            <div class="modal-content">
+                <span class="close-btn">&times;</span>
+                <h2>Add New Deface</h2>
+                <form id="defaceForm">
+                    <div class="form-group">
+                        <label>Target URL</label>
+                        <input type="text" id="targetUrl" required placeholder="https://example.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Hacker/Team Name</label>
+                        <input type="text" id="hackerName" placeholder="Anonymous">
+                    </div>
+                    <button type="submit">SUBMIT DEFACE</button>
+                </form>
+            </div>
         </div>
-        
-        <div class="mirror-list" id="mirrorList">
-            <!-- Deface entries will appear here -->
-            <div class="empty-message">No deface entries yet. Add one above.</div>
+
+        <div class="modal" id="viewModal">
+            <div class="modal-content">
+                <span class="close-btn">&times;</span>
+                <h2 id="viewTitle">Deface Details</h2>
+                <div class="view-content" id="viewContent">
+                    <!-- Content will be loaded here -->
+                </div>
+            </div>
         </div>
-        
-        <div class="footer">
-            <p>DEFACE MIRROR ARCHIVE | AUTO IP/COUNTRY DETECTION</p>
+
+        <div class="table-container">
+            <table id="defaceTable">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Target URL</th>
+                        <th>Hacker/Team</th>
+                        <th>IP Address</th>
+                        <th>Country</th>
+                        <th>Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <!-- Table content will be loaded here -->
+                </tbody>
+            </table>
         </div>
+
+        <div class="pagination">
+            <button id="prevBtn">Previous</button>
+            <div id="pageNumbers" class="page-numbers"></div>
+            <button id="nextBtn">Next</button>
+        </div>
+
+        <footer>
+            <p>DEFACE MIRROR ARCHIVE &copy; <span id="currentYear"></span></p>
+        </footer>
     </div>
 
     <script>
-        document.getElementById('defaceForm').addEventListener('submit', async function(e) {
+        // Data and state management
+        let defaceData = JSON.parse(localStorage.getItem('defaceArchive')) || [];
+        let currentPage = 1;
+        const rowsPerPage = 10;
+        let filteredData = [];
+
+        // DOM Elements
+        const tableBody = document.getElementById('tableBody');
+        const pageNumbers = document.getElementById('pageNumbers');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const searchInput = document.getElementById('searchInput');
+        const searchBtn = document.getElementById('searchBtn');
+        const addModal = document.getElementById('addModal');
+        const viewModal = document.getElementById('viewModal');
+        const addNewBtn = document.getElementById('addNewBtn');
+        const closeBtns = document.querySelectorAll('.close-btn');
+        const defaceForm = document.getElementById('defaceForm');
+        const viewContent = document.getElementById('viewContent');
+        const viewTitle = document.getElementById('viewTitle');
+
+        // Initialize
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+        filteredData = [...defaceData];
+        renderTable();
+        setupPagination();
+
+        // Event Listeners
+        addNewBtn.addEventListener('click', () => addModal.style.display = 'block');
+        searchBtn.addEventListener('click', handleSearch);
+        searchInput.addEventListener('keyup', (e) => e.key === 'Enter' && handleSearch());
+        prevBtn.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                renderTable();
+                updatePagination();
+            }
+        });
+        nextBtn.addEventListener('click', () => {
+            if (currentPage < Math.ceil(filteredData.length / rowsPerPage)) {
+                currentPage++;
+                renderTable();
+                updatePagination();
+            }
+        });
+        closeBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                addModal.style.display = 'none';
+                viewModal.style.display = 'none';
+            });
+        });
+        window.addEventListener('click', (e) => {
+            if (e.target === addModal) addModal.style.display = 'none';
+            if (e.target === viewModal) viewModal.style.display = 'none';
+        });
+
+        defaceForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const targetUrl = document.getElementById('targetUrl').value;
-            const hackerName = document.getElementById('hackerName').value;
-            const defaceContent = document.getElementById('defaceContent').value;
-            const screenshotUrl = document.getElementById('screenshotUrl').value;
+            const hackerName = document.getElementById('hackerName').value || 'Anonymous';
             
             try {
-                // Get IP and country info (using ipapi.co free API)
                 const ipInfo = await fetch('https://ipapi.co/json/').then(res => res.json());
                 
-                // Create new mirror entry
-                addMirrorEntry({
+                const newEntry = {
+                    id: Date.now(),
                     targetUrl,
                     hackerName,
-                    defaceContent,
-                    screenshotUrl,
                     ip: ipInfo.ip,
                     country: ipInfo.country_name,
-                    timestamp: new Date().toISOString()
-                });
+                    date: new Date().toISOString()
+                };
                 
-                // Reset form
+                defaceData.unshift(newEntry);
+                localStorage.setItem('defaceArchive', JSON.stringify(defaceData));
+                
+                filteredData = [...defaceData];
+                currentPage = 1;
+                renderTable();
+                setupPagination();
+                
                 this.reset();
+                addModal.style.display = 'none';
             } catch (error) {
-                console.error("Error getting IP info:", error);
-                // Fallback without IP info if API fails
-                addMirrorEntry({
+                console.error("Error:", error);
+                alert("Failed to get IP information. Entry saved without IP data.");
+                
+                const newEntry = {
+                    id: Date.now(),
                     targetUrl,
                     hackerName,
-                    defaceContent,
-                    screenshotUrl,
                     ip: "Unknown",
                     country: "Unknown",
-                    timestamp: new Date().toISOString()
-                });
+                    date: new Date().toISOString()
+                };
+                
+                defaceData.unshift(newEntry);
+                localStorage.setItem('defaceArchive', JSON.stringify(defaceData));
+                
+                filteredData = [...defaceData];
+                currentPage = 1;
+                renderTable();
+                setupPagination();
+                
                 this.reset();
+                addModal.style.display = 'none';
             }
         });
-        
-        function addMirrorEntry(data) {
-            const mirrorList = document.getElementById('mirrorList');
-            const emptyMsg = mirrorList.querySelector('.empty-message');
+
+        // Functions
+        function handleSearch() {
+            const searchTerm = searchInput.value.toLowerCase();
+            if (searchTerm === '') {
+                filteredData = [...defaceData];
+            } else {
+                filteredData = defaceData.filter(entry => 
+                    entry.targetUrl.toLowerCase().includes(searchTerm) ||
+                    entry.hackerName.toLowerCase().includes(searchTerm) ||
+                    entry.ip.toLowerCase().includes(searchTerm) ||
+                    entry.country.toLowerCase().includes(searchTerm)
+                );
+            }
+            currentPage = 1;
+            renderTable();
+            setupPagination();
+        }
+
+        function renderTable() {
+            const start = (currentPage - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
+            const paginatedData = filteredData.slice(start, end);
             
-            if (emptyMsg) {
-                mirrorList.removeChild(emptyMsg);
+            tableBody.innerHTML = '';
+            
+            if (paginatedData.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="7" class="no-data">No deface records found</td></tr>`;
+                return;
             }
             
-            const entry = document.createElement('div');
-            entry.className = 'mirror-entry';
+            paginatedData.forEach((entry, index) => {
+                const row = document.createElement('tr');
+                const displayIndex = start + index + 1;
+                
+                row.innerHTML = `
+                    <td>${displayIndex}</td>
+                    <td><a href="${entry.targetUrl}" target="_blank">${entry.targetUrl}</a></td>
+                    <td>${entry.hackerName}</td>
+                    <td>${entry.ip}</td>
+                    <td>${entry.country}</td>
+                    <td>${new Date(entry.date).toLocaleDateString()}</td>
+                    <td><button class="view-btn" data-id="${entry.id}">View</button></td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
             
-            entry.innerHTML = `
-                <div class="entry-header">
-                    <span class="target-url">${data.targetUrl}</span>
-                    <span class="hacker-name">${data.hackerName || 'Anonymous'}</span>
+            // Add event listeners to view buttons
+            document.querySelectorAll('.view-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const id = parseInt(btn.getAttribute('data-id'));
+                    const entry = defaceData.find(item => item.id === id);
+                    showEntryDetails(entry);
+                });
+            });
+        }
+
+        function showEntryDetails(entry) {
+            viewTitle.textContent = `Deface Details: ${entry.targetUrl}`;
+            
+            viewContent.innerHTML = `
+                <div class="detail-row">
+                    <span class="detail-label">Target URL:</span>
+                    <span class="detail-value"><a href="${entry.targetUrl}" target="_blank">${entry.targetUrl}</a></span>
                 </div>
-                <div class="entry-info">
-                    <span class="ip-info">IP: ${data.ip}</span>
-                    <span class="country-info">Country: ${data.country}</span>
-                    <span class="timestamp">${new Date(data.timestamp).toLocaleString()}</span>
+                <div class="detail-row">
+                    <span class="detail-label">Hacker/Team:</span>
+                    <span class="detail-value">${entry.hackerName}</span>
                 </div>
-                ${data.screenshotUrl ? `
-                <div class="screenshot">
-                    <img src="${data.screenshotUrl}" alt="Deface screenshot" onerror="this.parentElement.style.display='none'">
-                </div>` : ''}
-                <div class="deface-content">
-                    ${data.defaceContent || 'No deface message provided.'}
+                <div class="detail-row">
+                    <span class="detail-label">IP Address:</span>
+                    <span class="detail-value">${entry.ip}</span>
                 </div>
-                <div class="entry-footer">
-                    <span class="mirror-label">MIRRORED</span>
+                <div class="detail-row">
+                    <span class="detail-label">Country:</span>
+                    <span class="detail-value">${entry.country}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Date:</span>
+                    <span class="detail-value">${new Date(entry.date).toLocaleString()}</span>
                 </div>
             `;
             
-            mirrorList.prepend(entry);
-            saveToStorage(data);
+            viewModal.style.display = 'block';
         }
-        
-        function saveToStorage(data) {
-            let entries = JSON.parse(localStorage.getItem('defaceMirrorEntries')) || [];
-            entries.unshift(data);
-            localStorage.setItem('defaceMirrorEntries', JSON.stringify(entries));
-        }
-        
-        function loadFromStorage() {
-            const entries = JSON.parse(localStorage.getItem('defaceMirrorEntries')) || [];
-            const mirrorList = document.getElementById('mirrorList');
+
+        function setupPagination() {
+            pageNumbers.innerHTML = '';
+            const pageCount = Math.ceil(filteredData.length / rowsPerPage);
             
-            if (entries.length > 0) {
-                mirrorList.innerHTML = '';
-                
-                entries.forEach(entry => {
-                    const element = document.createElement('div');
-                    element.className = 'mirror-entry';
-                    
-                    element.innerHTML = `
-                        <div class="entry-header">
-                            <span class="target-url">${entry.targetUrl}</span>
-                            <span class="hacker-name">${entry.hackerName || 'Anonymous'}</span>
-                        </div>
-                        <div class="entry-info">
-                            <span class="ip-info">IP: ${entry.ip}</span>
-                            <span class="country-info">Country: ${entry.country}</span>
-                            <span class="timestamp">${new Date(entry.timestamp).toLocaleString()}</span>
-                        </div>
-                        ${entry.screenshotUrl ? `
-                        <div class="screenshot">
-                            <img src="${entry.screenshotUrl}" alt="Deface screenshot" onerror="this.parentElement.style.display='none'">
-                        </div>` : ''}
-                        <div class="deface-content">
-                            ${entry.defaceContent || 'No deface message provided.'}
-                        </div>
-                        <div class="entry-footer">
-                            <span class="mirror-label">MIRRORED</span>
-                        </div>
-                    `;
-                    
-                    mirrorList.appendChild(element);
-                });
+            if (pageCount <= 1) {
+                prevBtn.disabled = true;
+                nextBtn.disabled = true;
+                return;
             }
+            
+            // Show max 3 page numbers (current-1, current, current+1)
+            let startPage = Math.max(1, currentPage - 1);
+            let endPage = Math.min(pageCount, currentPage + 1);
+            
+            // Adjust if we're at the beginning or end
+            if (currentPage === 1) {
+                endPage = Math.min(3, pageCount);
+            } else if (currentPage === pageCount) {
+                startPage = Math.max(1, pageCount - 2);
+            }
+            
+            // Create page number buttons
+            for (let i = startPage; i <= endPage; i++) {
+                const pageBtn = document.createElement('button');
+                pageBtn.textContent = i;
+                if (i === currentPage) {
+                    pageBtn.classList.add('active');
+                }
+                pageBtn.addEventListener('click', () => {
+                    currentPage = i;
+                    renderTable();
+                    updatePagination();
+                });
+                pageNumbers.appendChild(pageBtn);
+            }
+            
+            // Update button states
+            prevBtn.disabled = currentPage === 1;
+            nextBtn.disabled = currentPage === pageCount;
         }
-        
-        // Load saved entries when page loads
-        window.addEventListener('DOMContentLoaded', loadFromStorage);
+
+        function updatePagination() {
+            const pageBtns = document.querySelectorAll('.page-numbers button');
+            pageBtns.forEach(btn => {
+                btn.classList.remove('active');
+                if (parseInt(btn.textContent) === currentPage) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            const pageCount = Math.ceil(filteredData.length / rowsPerPage);
+            prevBtn.disabled = currentPage === 1;
+            nextBtn.disabled = currentPage === pageCount;
+        }
     </script>
 </body>
 </html>
