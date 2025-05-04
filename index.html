@@ -1,98 +1,198 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>MIROR DEFACE CLAY DARK IND</title>
-    <meta charset="utf-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="styles.css">
+    <title>Deface Mirror</title>
+    <style>
+        body {
+            background-color: #000000;
+            color: #FFD700;
+            font-family: 'Courier New', Courier, monospace;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 2px solid #FFD700;
+            border-radius: 10px;
+            background-color: #1a1a1a;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+        }
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px #FFD700;
+        }
+        .input-group {
+            margin: 15px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 1.2em;
+        }
+        input[type="text"] {
+            padding: 10px;
+            width: 250px;
+            background-color: #333333;
+            border: 1px solid #FFD700;
+            color: #FFD700;
+            font-size: 1em;
+            border-radius: 5px;
+        }
+        input[type="text"]::placeholder {
+            color: #b3a000;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #FFD700;
+            color: #000000;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #e6c200;
+        }
+        #output {
+            margin-top: 20px;
+            font-size: 1.1em;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: #1a1a1a;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #FFD700;
+            text-align: left;
+            font-size: 0.9em;
+        }
+        th {
+            background-color: #333333;
+            color: #FFD700;
+        }
+        tr:nth-child(even) {
+            background-color: #2a2a2a;
+        }
+        .view-btn {
+            padding: 5px 10px;
+            background-color: #FFD700;
+            color: #000000;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .view-btn:hover {
+            background-color: #e6c200;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
-        <img src="logo.png" class="logo" id="siteLogo" alt="Site Logo">
-        <h1 id="siteTitle">MIRROR DEFACE ZONE-CLAYDARK { XhenzoSec }</h1>
-        
-        <div class="panel">
-            <div class="form-group">
-                <input type="text" id="url" placeholder="Enter target URL (http://example.com)" required>
-                <input type="text" id="defacer" placeholder="Enter your handle">
-            </div>
-            
-            <div class="btn-group">
-                <button id="analyzeBtn">Analyze Target</button>
-                <button id="previewBtn">Preview Website</button>
-                <button id="listBtn">Deface List</button>
-                <button id="adminLoginBtn">Admin Login</button>
-            </div>
-            
-            <div id="loading" class="hidden">
-                <p>Collecting target intelligence...</p>
-            </div>
-            
-            <div id="targetInfo" class="hidden">
-                <div class="info-grid">
-                    <div class="info-card">
-                        <div class="info-title">NETWORK INFORMATION</div>
-                        <div id="ipInfo">IP: Collecting...</div>
-                        <div id="countryInfo">Country: Analyzing...</div>
-                        <div id="hostingInfo">Hosting: Checking...</div>
-                    </div>
-                    
-                    <div class="info-card">
-                        <div class="info-title">WEBSITE TYPE</div>
-                        <div id="websiteType">Analyzing content...</div>
-                        <div id="cmsInfo">CMS: Scanning...</div>
-                        <div id="securityInfo">Security: Evaluating...</div>
-                    </div>
-                    
-                    <div class="info-card">
-                        <div class="info-title">SERVER DETAILS</div>
-                        <div id="serverInfo">Server: Identifying...</div>
-                        <div id="sslInfo">SSL: Verifying...</div>
-                        <div id="techStack">Technologies: Detecting...</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="status" id="status">Ready for target analysis</div>
+        <h1>Deface Mirror XhenzoSec</h1>
+        <div class="input-group">
+            <label for="url">Target URL</label>
+            <input type="text" id="url" placeholder="Enter URL (e.g., http://example.com)">
         </div>
-        
-        <div id="previewContainer" class="hidden">
-            <iframe id="previewFrame" sandbox="allow-same-origin allow-scripts"></iframe>
+        <div class="input-group">
+            <label for="name">Name</label>
+            <input type="text" id="name" placeholder="Enter Your Name">
         </div>
-        
-        <div id="listContainer" class="hidden">
-            <h2>DEFACE ARCHIVE</h2>
-            <div id="defaceList"></div>
-        </div>
+        <button onclick="submitDeface()">Submit</button>
+        <div id="output"></div>
+
+        <h2>Deface Mirror List</h2>
+        <table id="defaceTable">
+            <thead>
+                <tr>
+                    <th>URL</th>
+                    <th>Name</th>
+                    <th>IP</th>
+                    <th>Country</th>
+                    <th>Web</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                <!-- Table rows will be added dynamically -->
+            </tbody>
+        </table>
     </div>
 
-    <div id="adminPanel" class="hidden">
-        <button class="close-btn" onclick="toggleAdminPanel()">✖</button>
-        <h2>Admin Control Panel</h2>
-        <div class="notification">
-            WARNING: Camera and location access are required for login. All login attempts are monitored and recorded.
-        </div>
-        <div id="loginForm">
-            <div class="form-group">
-                <input type="text" id="adminUsername" placeholder="Username">
-                <input type="password" id="adminPassword" placeholder="Password">
-                <input type="text" id="adminToken" placeholder="Security Token">
-                <video id="cameraPreview" autoplay playsinline></video>
-            </div>
-            <button onclick="adminLogin()">Login</button>
-        </div>
-        <div id="adminControls" class="hidden">
-            <h3>Manage Deface List</h3>
-            <div id="adminDefaceList"></div>
-            <div class="admin-controls">
-                <h3>Customize Site</h3>
-                <input type="text" id="siteTitleInput" placeholder="Enter new site title">
-                <input type="file" id="logoInput" accept="image/*">
-                <button onclick="updateSiteBranding()">Update Branding</button>
-            </div>
-        </div>
-    </div>
+    <script>
+        // Mock IP and Country data based on URL
+        const mockData = {
+            "http://example.com": { ip: "93.184.216.34", country: "United States" },
+            "http://test.com": { ip: "198.51.100.23", country: "Canada" },
+            "http://demo.com": { ip: "203.0.113.45", country: "United Kingdom" }
+        };
 
-    <script src="script.js"></script>
+        // Store deface entries
+        let defaceList = JSON.parse(localStorage.getItem('defaceList')) || [];
+
+        // Function to update table
+        function updateTable() {
+            const tableBody = document.getElementById('tableBody');
+            tableBody.innerHTML = '';
+
+            defaceList.forEach(entry => {
+                const row = document.createElement('tr');
+                const ipData = mockData[entry.url] || { ip: "Unknown", country: "Unknown" };
+                row.innerHTML = `
+                    <td>${entry.url}</td>
+                    <td>${entry.name}</td>
+                    <td>${ipData.ip}</td>
+                    <td>${ipData.country}</td>
+                    <td>${entry.url}</td>
+                    <td><button class="view-btn" onclick="viewWeb('${entry.url}')">View Web</button></td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Function to submit deface
+        function submitDeface() {
+            const url = document.getElementById('url').value;
+            const name = document.getElementById('name').value;
+            const output = document.getElementById('output');
+
+            if (!url || !name) {
+                output.innerHTML = '<p style="color: red;">Please fill in both URL and Name!</p>';
+                return;
+            }
+
+            const newEntry = { url, name };
+            defaceList.push(newEntry);
+            localStorage.setItem('defaceList', JSON.stringify(defaceList));
+
+            output.innerHTML = `
+                <p>Defacement Recorded!</p>
+                <p>Target: ${url}</p>
+                <p>Defacer: ${name}</p>
+                <p>Status: Mirrored</p>
+            `;
+
+            document.getElementById('url').value = '';
+            document.getElementById('name').value = '';
+            updateTable();
+        }
+
+        // Function to view web
+        function viewWeb(url) {
+            window.open(url, '_blank');
+        }
+
+        // Initial table load
+        updateTable();
+    </script>
 </body>
 </html>
