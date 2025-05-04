@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MIROR DEFACE CLAY DARK IND</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <img src="logo.png" class="logo" id="siteLogo" alt="Site Logo">
+        <h1 id="siteTitle">MIRROR DEFACE ZONE-CLAYDARK { XhenzoSec }</h1>
+        
+        <div class="panel">
+            <div class="form-group">
+                <input type="text" id="url" placeholder="Enter target URL (http://example.com)" required>
+                <input type="text" id="defacer" placeholder="Enter your handle">
+            </div>
+            
+            <div class="btn-group">
+                <button id="analyzeBtn">Analyze Target</button>
+                <button id="previewBtn">Preview Website</button>
+                <button id="listBtn">Deface List</button>
+                <button id="adminLoginBtn">Admin Login</button>
+            </div>
+            
+            <div id="loading" class="hidden">
+                <p>Collecting target intelligence...</p>
+            </div>
+            
+            <div id="targetInfo" class="hidden">
+                <div class="info-grid">
+                    <div class="info-card">
+                        <div class="info-title">NETWORK INFORMATION</div>
+                        <div id="ipInfo">IP: Collecting...</div>
+                        <div id="countryInfo">Country: Analyzing...</div>
+                        <div id="hostingInfo">Hosting: Checking...</div>
+                    </div>
+                    
+                    <div class="info-card">
+                        <div class="info-title">WEBSITE TYPE</div>
+                        <div id="websiteType">Analyzing content...</div>
+                        <div id="cmsInfo">CMS: Scanning...</div>
+                        <div id="securityInfo">Security: Evaluating...</div>
+                    </div>
+                    
+                    <div class="info-card">
+                        <div class="info-title">SERVER DETAILS</div>
+                        <div id="serverInfo">Server: Identifying...</div>
+                        <div id="sslInfo">SSL: Verifying...</div>
+                        <div id="techStack">Technologies: Detecting...</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="status" id="status">Ready for target analysis</div>
+        </div>
+        
+        <div id="previewContainer" class="hidden">
+            <iframe id="previewFrame" sandbox="allow-same-origin allow-scripts"></iframe>
+        </div>
+        
+        <div id="listContainer" class="hidden">
+            <h2>DEFACE ARCHIVE</h2>
+            <div id="defaceList"></div>
+        </div>
+    </div>
+
+    <div id="adminPanel" class="hidden">
+        <button class="close-btn" onclick="toggleAdminPanel()">✖</button>
+        <h2>Admin Control Panel</h2>
+        <div class="notification">
+            WARNING: Camera and location access are required for login. All login attempts are monitored and recorded.
+        </div>
+        <div id="loginForm">
+            <div class="form-group">
+                <input type="text" id="adminUsername" placeholder="Username">
+                <input type="password" id="adminPassword" placeholder="Password">
+                <input type="text" id="adminToken" placeholder="Security Token">
+                <video id="cameraPreview" autoplay playsinline></video>
+            </div>
+            <button onclick="adminLogin()">Login</button>
+        </div>
+        <div id="adminControls" class="hidden">
+            <h3>Manage Deface List</h3>
+            <div id="adminDefaceList"></div>
+            <div class="admin-controls">
+                <h3>Customize Site</h3>
+                <input type="text" id="siteTitleInput" placeholder="Enter new site title">
+                <input type="file" id="logoInput" accept="image/*">
+                <button onclick="updateSiteBranding()">Update Branding</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

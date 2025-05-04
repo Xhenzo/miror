@@ -1,0 +1,267 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap');
+
+body {
+    background-color: #000;
+    color: #e0e0e0;
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+    padding: 0;
+    opacity: 0;
+    animation: fadeIn 1s forwards;
+    overflow-x: hidden;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    position: relative;
+}
+
+.logo {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    width: 100px;
+    height: auto;
+    filter: drop-shadow(0 0 5px #ff5555);
+}
+
+h1 {
+    color: #ff5555;
+    text-shadow: 0 0 8px #ff5555;
+    margin: 50px 0 50px;
+    padding-bottom: 10px;
+    text-align: center;
+    font-size: 2.5em;
+}
+
+.panel {
+    background-color: #1a1a1a;
+    border: 1px solid #ff5555;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 15px rgba(255, 85, 85, 0.2);
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+input[type="text"], input[type="password"], input[type="file"] {
+    background-color: #333;
+    border: 1px solid #ff5555;
+    color: #e0e0e0;
+    padding: 12px;
+    width: 100%;
+    margin: 5px 0;
+    border-radius: 5px;
+    font-family: 'Roboto', sans-serif;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+input[type="text"]:focus, input[type="password"]:focus, input[type="file"]:focus {
+    border-color: #ff8888;
+    box-shadow: 0 0 5px rgba(255, 136, 136, 0.5);
+    outline: none;
+}
+
+.btn-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 15px 0;
+}
+
+button {
+    background-color: #ff5555;
+    color: #fff;
+    border: none;
+    padding: 12px 24px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s;
+    flex-grow: 1;
+    font-family: 'Roboto', sans-serif;
+    border-radius: 5px;
+}
+
+button:hover {
+    background-color: #ff3333;
+    transform: translateY(-2px);
+}
+
+.action-btn {
+    background-color: #ff7777;
+    padding: 8px 15px;
+    font-size: 14px;
+    margin: 0 5px;
+}
+
+.action-btn:hover {
+    background-color: #ff5555;
+}
+
+.delete-btn {
+    background-color: #ff9999;
+}
+
+.delete-btn:hover {
+    background-color: #ff6666;
+}
+
+iframe {
+    width: 100%;
+    height: 500px;
+    border: 2px solid #ff5555;
+    background-color: #000;
+    border-radius: 8px;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.info-card {
+    background-color: #1a1a1a;
+    border: 1px solid #ff5555;
+    padding: 15px;
+    border-radius: 8px;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.info-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 15px rgba(255, 85, 85, 0.3);
+}
+
+.info-title {
+    color: #ff5555;
+    font-weight: 500;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #ff5555;
+    padding-bottom: 5px;
+}
+
+.status {
+    margin: 15px 0;
+    padding: 12px;
+    background-color: #1a1a1a;
+    border-left: 4px solid #ff5555;
+    color: #e0e0e0;
+    border-radius: 5px;
+}
+
+.hidden {
+    display: none;
+}
+
+#loading {
+    color: #ff5555;
+    text-align: center;
+    padding: 20px;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+#listContainer table {
+    width: 100%;
+    border-collapse: collapse;
+    color: #e0e0e0;
+}
+
+#listContainer th, #listContainer td {
+    border: 1px solid #ff5555;
+    padding: 12px;
+    text-align: left;
+}
+
+#listContainer th {
+    background-color: #333;
+    font-weight: 500;
+}
+
+#listContainer tr:hover {
+    background-color: #2a2a2a;
+}
+
+#adminPanel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 350px;
+    height: 100%;
+    background-color: #1a1a1a;
+    border-left: 1px solid #ff5555;
+    padding: 20px;
+    transform: translateX(100%);
+    transition: transform 0.3s ease-in-out;
+    z-index: 1000;
+    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.5);
+}
+
+#adminPanel.active {
+    transform: translateX(0);
+}
+
+#adminPanel .close-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    color: #ff5555;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+#cameraPreview {
+    width: 100%;
+    max-height: 200px;
+    border: 1px solid #ff5555;
+    margin-top: 10px;
+    border-radius: 5px;
+    display: none;
+}
+
+.notification {
+    background-color: #333;
+    border: 1px solid #ff7777;
+    padding: 12px;
+    margin-bottom: 15px;
+    color: #ff9999;
+    font-size: 14px;
+    border-radius: 5px;
+}
+
+.admin-controls {
+    margin-top: 20px;
+}
+
+.admin-controls h3 {
+    color: #ff5555;
+    margin-bottom: 15px;
+}
+
+.admin-controls input[type="text"] {
+    margin-bottom: 10px;
+}
+
+.admin-controls button {
+    width: 100%;
+    margin-top: 10px;
+}
