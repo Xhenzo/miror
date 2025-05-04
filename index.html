@@ -7,328 +7,277 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>DEFACE MIRROR ARCHIVE</h1>
-            <p>Automated deface records with IP/Country detection</p>
-        </header>
-
-        <div class="control-panel">
-            <button id="addNewBtn">ADD NEW DEFACE</button>
-            <div class="search-box">
-                <input type="text" id="searchInput" placeholder="Search...">
-                <button id="searchBtn">Search</button>
+    <div class="terminal">
+        <div class="terminal-header">
+            <div class="terminal-controls">
+                <span class="control close"></span>
+                <span class="control minimize"></span>
+                <span class="control maximize"></span>
             </div>
+            <span class="terminal-title">root@defacer:~</span>
         </div>
-
-        <div class="modal" id="addModal">
-            <div class="modal-content">
-                <span class="close-btn">&times;</span>
-                <h2>Add New Deface</h2>
-                <form id="defaceForm">
-                    <div class="form-group">
-                        <label>Target URL</label>
-                        <input type="text" id="targetUrl" required placeholder="https://example.com">
-                    </div>
-                    <div class="form-group">
-                        <label>Hacker/Team Name</label>
-                        <input type="text" id="hackerName" placeholder="Anonymous">
-                    </div>
-                    <button type="submit">SUBMIT DEFACE</button>
-                </form>
+        
+        <div class="terminal-body">
+            <!-- Command Input -->
+            <div class="command-line">
+                <span class="prompt">$</span>
+                <input type="text" id="commandInput" placeholder="add, search, list, clear" autofocus>
             </div>
-        </div>
-
-        <div class="modal" id="viewModal">
-            <div class="modal-content">
-                <span class="close-btn">&times;</span>
-                <h2 id="viewTitle">Deface Details</h2>
-                <div class="view-content" id="viewContent">
-                    <!-- Content will be loaded here -->
+            
+            <!-- Output Area -->
+            <div id="output"></div>
+            
+            <!-- Deface Table (Hidden by Default) -->
+            <div id="defaceTableContainer" class="hidden">
+                <table id="defaceTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>URL</th>
+                            <th>Hacker</th>
+                            <th>IP</th>
+                            <th>Country</th>
+                            <th>Date</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+            
+            <!-- Web Preview (Hidden by Default) -->
+            <div id="webPreview" class="hidden">
+                <div class="preview-header">
+                    <span>Web Preview</span>
+                    <button id="closePreview">✕</button>
                 </div>
+                <iframe id="previewFrame" sandbox="allow-same-origin"></iframe>
             </div>
         </div>
-
-        <div class="table-container">
-            <table id="defaceTable">
-                <thead>
-                    <tr>
-                        <th>No</th>
-                        <th>Target URL</th>
-                        <th>Hacker/Team</th>
-                        <th>IP Address</th>
-                        <th>Country</th>
-                        <th>Date</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody id="tableBody">
-                    <!-- Table content will be loaded here -->
-                </tbody>
-            </table>
-        </div>
-
-        <div class="pagination">
-            <button id="prevBtn">Previous</button>
-            <div id="pageNumbers" class="page-numbers"></div>
-            <button id="nextBtn">Next</button>
-        </div>
-
-        <footer>
-            <p>DEFACE MIRROR ARCHIVE &copy; <span id="currentYear"></span></p>
-        </footer>
     </div>
 
     <script>
-        // Data and state management
+        // Data Storage
         let defaceData = JSON.parse(localStorage.getItem('defaceArchive')) || [];
-        let currentPage = 1;
-        const rowsPerPage = 10;
-        let filteredData = [];
 
         // DOM Elements
+        const commandInput = document.getElementById('commandInput');
+        const output = document.getElementById('output');
+        const defaceTableContainer = document.getElementById('defaceTableContainer');
         const tableBody = document.getElementById('tableBody');
-        const pageNumbers = document.getElementById('pageNumbers');
-        const prevBtn = document.getElementById('prevBtn');
-        const nextBtn = document.getElementById('nextBtn');
-        const searchInput = document.getElementById('searchInput');
-        const searchBtn = document.getElementById('searchBtn');
-        const addModal = document.getElementById('addModal');
-        const viewModal = document.getElementById('viewModal');
-        const addNewBtn = document.getElementById('addNewBtn');
-        const closeBtns = document.querySelectorAll('.close-btn');
-        const defaceForm = document.getElementById('defaceForm');
-        const viewContent = document.getElementById('viewContent');
-        const viewTitle = document.getElementById('viewTitle');
+        const webPreview = document.getElementById('webPreview');
+        const previewFrame = document.getElementById('previewFrame');
+        const closePreview = document.getElementById('closePreview');
 
         // Initialize
-        document.getElementById('currentYear').textContent = new Date().getFullYear();
-        filteredData = [...defaceData];
-        renderTable();
-        setupPagination();
+        printWelcomeMessage();
 
         // Event Listeners
-        addNewBtn.addEventListener('click', () => addModal.style.display = 'block');
-        searchBtn.addEventListener('click', handleSearch);
-        searchInput.addEventListener('keyup', (e) => e.key === 'Enter' && handleSearch());
-        prevBtn.addEventListener('click', () => {
-            if (currentPage > 1) {
-                currentPage--;
-                renderTable();
-                updatePagination();
-            }
-        });
-        nextBtn.addEventListener('click', () => {
-            if (currentPage < Math.ceil(filteredData.length / rowsPerPage)) {
-                currentPage++;
-                renderTable();
-                updatePagination();
-            }
-        });
-        closeBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                addModal.style.display = 'none';
-                viewModal.style.display = 'none';
-            });
-        });
-        window.addEventListener('click', (e) => {
-            if (e.target === addModal) addModal.style.display = 'none';
-            if (e.target === viewModal) viewModal.style.display = 'none';
-        });
-
-        defaceForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const targetUrl = document.getElementById('targetUrl').value;
-            const hackerName = document.getElementById('hackerName').value || 'Anonymous';
-            
-            try {
-                const ipInfo = await fetch('https://ipapi.co/json/').then(res => res.json());
-                
-                const newEntry = {
-                    id: Date.now(),
-                    targetUrl,
-                    hackerName,
-                    ip: ipInfo.ip,
-                    country: ipInfo.country_name,
-                    date: new Date().toISOString()
-                };
-                
-                defaceData.unshift(newEntry);
-                localStorage.setItem('defaceArchive', JSON.stringify(defaceData));
-                
-                filteredData = [...defaceData];
-                currentPage = 1;
-                renderTable();
-                setupPagination();
-                
-                this.reset();
-                addModal.style.display = 'none';
-            } catch (error) {
-                console.error("Error:", error);
-                alert("Failed to get IP information. Entry saved without IP data.");
-                
-                const newEntry = {
-                    id: Date.now(),
-                    targetUrl,
-                    hackerName,
-                    ip: "Unknown",
-                    country: "Unknown",
-                    date: new Date().toISOString()
-                };
-                
-                defaceData.unshift(newEntry);
-                localStorage.setItem('defaceArchive', JSON.stringify(defaceData));
-                
-                filteredData = [...defaceData];
-                currentPage = 1;
-                renderTable();
-                setupPagination();
-                
-                this.reset();
-                addModal.style.display = 'none';
+        commandInput.addEventListener('keyup', (e) => {
+            if (e.key === 'Enter') {
+                processCommand(commandInput.value.trim());
+                commandInput.value = '';
             }
         });
 
-        // Functions
-        function handleSearch() {
-            const searchTerm = searchInput.value.toLowerCase();
-            if (searchTerm === '') {
-                filteredData = [...defaceData];
-            } else {
-                filteredData = defaceData.filter(entry => 
-                    entry.targetUrl.toLowerCase().includes(searchTerm) ||
-                    entry.hackerName.toLowerCase().includes(searchTerm) ||
-                    entry.ip.toLowerCase().includes(searchTerm) ||
-                    entry.country.toLowerCase().includes(searchTerm)
-                );
+        closePreview.addEventListener('click', () => {
+            webPreview.classList.add('hidden');
+            defaceTableContainer.classList.remove('hidden');
+        });
+
+        // Command Processing
+        function processCommand(cmd) {
+            const args = cmd.split(' ');
+            const command = args[0].toLowerCase();
+
+            switch(command) {
+                case 'add':
+                    addDeface();
+                    break;
+                case 'search':
+                    if (args.length < 2) {
+                        printError("Usage: search [query]");
+                    } else {
+                        searchDeface(args.slice(1).join(' '));
+                    }
+                    break;
+                case 'list':
+                    listDeface();
+                    break;
+                case 'clear':
+                    clearOutput();
+                    break;
+                case 'help':
+                    printHelp();
+                    break;
+                default:
+                    printError(`Command not found: ${command}`);
             }
-            currentPage = 1;
-            renderTable();
-            setupPagination();
         }
 
-        function renderTable() {
-            const start = (currentPage - 1) * rowsPerPage;
-            const end = start + rowsPerPage;
-            const paginatedData = filteredData.slice(start, end);
-            
-            tableBody.innerHTML = '';
-            
-            if (paginatedData.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="7" class="no-data">No deface records found</td></tr>`;
+        // Commands
+        function addDeface() {
+            const url = prompt("Enter target URL:");
+            if (!url) return;
+
+            const hacker = prompt("Enter hacker/team name (optional):") || "Anonymous";
+
+            fetch('https://ipapi.co/json/')
+                .then(res => res.json())
+                .then(ipInfo => {
+                    const newEntry = {
+                        id: Date.now(),
+                        url,
+                        hacker,
+                        ip: ipInfo.ip,
+                        country: ipInfo.country_name,
+                        date: new Date().toISOString()
+                    };
+
+                    defaceData.unshift(newEntry);
+                    localStorage.setItem('defaceArchive', JSON.stringify(defaceData));
+                    printSuccess(`Added: ${url}`);
+                    listDeface();
+                })
+                .catch(err => {
+                    printError("Failed to fetch IP info. Using fallback data.");
+                    const newEntry = {
+                        id: Date.now(),
+                        url,
+                        hacker,
+                        ip: "Unknown",
+                        country: "Unknown",
+                        date: new Date().toISOString()
+                    };
+                    defaceData.unshift(newEntry);
+                    localStorage.setItem('defaceArchive', JSON.stringify(defaceData));
+                    printSuccess(`Added: ${url}`);
+                    listDeface();
+                });
+        }
+
+        function searchDeface(query) {
+            const results = defaceData.filter(entry => 
+                entry.url.includes(query) || 
+                entry.hacker.toLowerCase().includes(query.toLowerCase()) ||
+                entry.ip.includes(query) ||
+                entry.country.toLowerCase().includes(query.toLowerCase())
+            );
+
+            if (results.length === 0) {
+                printError("No results found.");
                 return;
             }
-            
-            paginatedData.forEach((entry, index) => {
+
+            renderTable(results);
+            printSuccess(`Found ${results.length} matches.`);
+        }
+
+        function listDeface() {
+            if (defaceData.length === 0) {
+                printError("No deface records found.");
+                return;
+            }
+            renderTable(defaceData);
+            printSuccess(`Showing ${defaceData.length} records.`);
+        }
+
+        // Rendering
+        function renderTable(data) {
+            tableBody.innerHTML = '';
+            data.forEach(entry => {
                 const row = document.createElement('tr');
-                const displayIndex = start + index + 1;
-                
                 row.innerHTML = `
-                    <td>${displayIndex}</td>
-                    <td><a href="${entry.targetUrl}" target="_blank">${entry.targetUrl}</a></td>
-                    <td>${entry.hackerName}</td>
+                    <td>${entry.id}</td>
+                    <td><a href="${entry.url}" target="_blank">${entry.url}</a></td>
+                    <td>${entry.hacker}</td>
                     <td>${entry.ip}</td>
                     <td>${entry.country}</td>
-                    <td>${new Date(entry.date).toLocaleDateString()}</td>
-                    <td><button class="view-btn" data-id="${entry.id}">View</button></td>
+                    <td>${new Date(entry.date).toLocaleString()}</td>
+                    <td><button class="view-btn" data-url="${entry.url}">View</button></td>
                 `;
-                
                 tableBody.appendChild(row);
             });
-            
+
             // Add event listeners to view buttons
             document.querySelectorAll('.view-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const id = parseInt(btn.getAttribute('data-id'));
-                    const entry = defaceData.find(item => item.id === id);
-                    showEntryDetails(entry);
+                btn.addEventListener('click', (e) => {
+                    const url = btn.getAttribute('data-url');
+                    previewFrame.src = url;
+                    defaceTableContainer.classList.add('hidden');
+                    webPreview.classList.remove('hidden');
                 });
             });
+
+            defaceTableContainer.classList.remove('hidden');
+            webPreview.classList.add('hidden');
         }
 
-        function showEntryDetails(entry) {
-            viewTitle.textContent = `Deface Details: ${entry.targetUrl}`;
-            
-            viewContent.innerHTML = `
-                <div class="detail-row">
-                    <span class="detail-label">Target URL:</span>
-                    <span class="detail-value"><a href="${entry.targetUrl}" target="_blank">${entry.targetUrl}</a></span>
+        // Output Functions
+        function printWelcomeMessage() {
+            output.innerHTML += `
+                <div class="output-line">
+                    <span class="prompt">$</span> 
+                    <span>Welcome to Deface Mirror Archive</span>
                 </div>
-                <div class="detail-row">
-                    <span class="detail-label">Hacker/Team:</span>
-                    <span class="detail-value">${entry.hackerName}</span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">IP Address:</span>
-                    <span class="detail-value">${entry.ip}</span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">Country:</span>
-                    <span class="detail-value">${entry.country}</span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">Date:</span>
-                    <span class="detail-value">${new Date(entry.date).toLocaleString()}</span>
+                <div class="output-line">
+                    <span class="prompt">$</span> 
+                    <span>Type <span class="command">help</span> for available commands</span>
                 </div>
             `;
-            
-            viewModal.style.display = 'block';
         }
 
-        function setupPagination() {
-            pageNumbers.innerHTML = '';
-            const pageCount = Math.ceil(filteredData.length / rowsPerPage);
-            
-            if (pageCount <= 1) {
-                prevBtn.disabled = true;
-                nextBtn.disabled = true;
-                return;
-            }
-            
-            // Show max 3 page numbers (current-1, current, current+1)
-            let startPage = Math.max(1, currentPage - 1);
-            let endPage = Math.min(pageCount, currentPage + 1);
-            
-            // Adjust if we're at the beginning or end
-            if (currentPage === 1) {
-                endPage = Math.min(3, pageCount);
-            } else if (currentPage === pageCount) {
-                startPage = Math.max(1, pageCount - 2);
-            }
-            
-            // Create page number buttons
-            for (let i = startPage; i <= endPage; i++) {
-                const pageBtn = document.createElement('button');
-                pageBtn.textContent = i;
-                if (i === currentPage) {
-                    pageBtn.classList.add('active');
-                }
-                pageBtn.addEventListener('click', () => {
-                    currentPage = i;
-                    renderTable();
-                    updatePagination();
-                });
-                pageNumbers.appendChild(pageBtn);
-            }
-            
-            // Update button states
-            prevBtn.disabled = currentPage === 1;
-            nextBtn.disabled = currentPage === pageCount;
+        function printHelp() {
+            output.innerHTML += `
+                <div class="output-line">
+                    <span class="prompt">$</span> 
+                    <span>Available commands:</span>
+                </div>
+                <div class="output-line">
+                    <span class="prompt">></span> 
+                    <span class="command">add</span> - Add new deface entry
+                </div>
+                <div class="output-line">
+                    <span class="prompt">></span> 
+                    <span class="command">search [query]</span> - Search deface records
+                </div>
+                <div class="output-line">
+                    <span class="prompt">></span> 
+                    <span class="command">list</span> - List all deface records
+                </div>
+                <div class="output-line">
+                    <span class="prompt">></span> 
+                    <span class="command">clear</span> - Clear terminal
+                </div>
+            `;
         }
 
-        function updatePagination() {
-            const pageBtns = document.querySelectorAll('.page-numbers button');
-            pageBtns.forEach(btn => {
-                btn.classList.remove('active');
-                if (parseInt(btn.textContent) === currentPage) {
-                    btn.classList.add('active');
-                }
-            });
-            
-            const pageCount = Math.ceil(filteredData.length / rowsPerPage);
-            prevBtn.disabled = currentPage === 1;
-            nextBtn.disabled = currentPage === pageCount;
+        function printSuccess(message) {
+            output.innerHTML += `
+                <div class="output-line success">
+                    <span class="prompt">$</span> 
+                    <span>${message}</span>
+                </div>
+            `;
+            scrollToBottom();
+        }
+
+        function printError(message) {
+            output.innerHTML += `
+                <div class="output-line error">
+                    <span class="prompt">$</span> 
+                    <span>${message}</span>
+                </div>
+            `;
+            scrollToBottom();
+        }
+
+        function clearOutput() {
+            output.innerHTML = '';
+        }
+
+        function scrollToBottom() {
+            output.scrollTop = output.scrollHeight;
         }
     </script>
 </body>
