@@ -1,355 +1,195 @@
-/* Global Styles */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
+/* Terminal Styling */
 body {
-    background-color: #121212;
+    background-color: #1a1a1a;
     color: #e0e0e0;
-    line-height: 1.6;
-}
-
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
+    font-family: 'Courier New', monospace;
+    margin: 0;
     padding: 20px;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
-/* Header Styles */
-header {
-    text-align: center;
-    margin-bottom: 30px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid #333;
+.terminal {
+    width: 90%;
+    max-width: 1000px;
+    height: 80vh;
+    background-color: #121212;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
 }
 
-header h1 {
-    color: #ff4444;
-    font-size: 2.5rem;
-    margin-bottom: 10px;
-    letter-spacing: 1px;
-}
-
-header p {
-    color: #aaa;
-    font-size: 1rem;
-}
-
-/* Control Panel Styles */
-.control-panel {
+.terminal-header {
+    background-color: #333;
+    padding: 8px 12px;
     display: flex;
     justify-content: space-between;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-    gap: 15px;
+    align-items: center;
 }
 
-#addNewBtn {
-    background-color: #ff4444;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: background-color 0.3s;
-}
-
-#addNewBtn:hover {
-    background-color: #ff3333;
-}
-
-.search-box {
+.terminal-controls {
     display: flex;
-    gap: 10px;
+    gap: 8px;
 }
 
-#searchInput {
-    padding: 10px;
-    border: 1px solid #333;
-    border-radius: 4px;
-    background-color: #222;
-    color: #fff;
-    min-width: 250px;
+.control {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
 }
 
-#searchBtn {
-    padding: 10px 15px;
-    background-color: #444;
-    color: white;
+.close { background-color: #ff5f56; }
+.minimize { background-color: #ffbd2e; }
+.maximize { background-color: #27c93f; }
+
+.terminal-title {
+    color: #aaa;
+    font-size: 0.9rem;
+}
+
+.terminal-body {
+    padding: 15px;
+    height: calc(100% - 40px);
+    overflow-y: auto;
+}
+
+/* Command Line */
+.command-line {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.prompt {
+    color: #4CAF50;
+    margin-right: 8px;
+    font-weight: bold;
+}
+
+#commandInput {
+    background: transparent;
     border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.3s;
+    color: #e0e0e0;
+    font-family: 'Courier New', monospace;
+    font-size: 1rem;
+    flex: 1;
+    outline: none;
 }
 
-#searchBtn:hover {
-    background-color: #555;
+/* Output Area */
+#output {
+    margin-bottom: 15px;
 }
 
-/* Table Styles */
-.table-container {
-    overflow-x: auto;
-    margin-bottom: 20px;
-    border: 1px solid #333;
-    border-radius: 6px;
+.output-line {
+    margin-bottom: 5px;
+    word-break: break-all;
 }
 
-table {
+.success { color: #4CAF50; }
+.error { color: #f44336; }
+.command { color: #2196F3; font-weight: bold; }
+
+/* Table Styling */
+#defaceTableContainer {
+    margin-top: 20px;
+}
+
+#defaceTable {
     width: 100%;
     border-collapse: collapse;
+    margin-top: 10px;
 }
 
-th, td {
-    padding: 12px 15px;
+#defaceTable th, #defaceTable td {
+    padding: 8px 12px;
     text-align: left;
     border-bottom: 1px solid #333;
 }
 
-th {
-    background-color: #222;
-    color: #ff4444;
-    font-weight: bold;
-    position: sticky;
-    top: 0;
+#defaceTable th {
+    background-color: #252525;
+    color: #4CAF50;
 }
 
-tr:hover {
-    background-color: #1e1e1e;
+#defaceTable tr:hover {
+    background-color: #252525;
 }
 
-td a {
-    color: #4dabf7;
+#defaceTable a {
+    color: #2196F3;
     text-decoration: none;
 }
 
-td a:hover {
+#defaceTable a:hover {
     text-decoration: underline;
 }
 
 .view-btn {
-    padding: 5px 10px;
     background-color: #333;
     color: #fff;
     border: none;
+    padding: 5px 10px;
     border-radius: 3px;
     cursor: pointer;
-    transition: background-color 0.3s;
+    font-family: 'Courier New', monospace;
 }
 
 .view-btn:hover {
     background-color: #444;
 }
 
-.no-data {
-    text-align: center;
-    padding: 20px;
-    color: #888;
-}
-
-/* Pagination Styles */
-.pagination {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
+/* Web Preview */
+#webPreview {
     margin-top: 20px;
-}
-
-.pagination button {
-    padding: 8px 15px;
-    background-color: #333;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-
-.pagination button:hover:not(:disabled) {
-    background-color: #444;
-}
-
-.pagination button:disabled {
-    background-color: #222;
-    cursor: not-allowed;
-    opacity: 0.6;
-}
-
-.page-numbers {
-    display: flex;
-    gap: 5px;
-}
-
-.page-numbers button {
-    width: 35px;
-    height: 35px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #333;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.page-numbers button.active {
-    background-color: #ff4444;
-}
-
-/* Modal Styles */
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 1;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.7);
-}
-
-.modal-content {
-    background-color: #1e1e1e;
-    margin: 5% auto;
-    padding: 25px;
-    border-radius: 8px;
-    width: 90%;
-    max-width: 600px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
-    position: relative;
-}
-
-.close-btn {
-    position: absolute;
-    right: 20px;
-    top: 20px;
-    color: #aaa;
-    font-size: 28px;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-.close-btn:hover {
-    color: #fff;
-}
-
-.modal h2 {
-    color: #ff4444;
-    margin-bottom: 20px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #333;
-}
-
-/* Form Styles */
-.form-group {
-    margin-bottom: 15px;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 5px;
-    color: #aaa;
-}
-
-.form-group input {
-    width: 100%;
-    padding: 10px;
+    height: 70vh;
     border: 1px solid #333;
     border-radius: 4px;
-    background-color: #222;
+    display: flex;
+    flex-direction: column;
+}
+
+.preview-header {
+    background-color: #252525;
+    padding: 8px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#closePreview {
+    background: none;
+    border: none;
+    color: #aaa;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+#closePreview:hover {
     color: #fff;
 }
 
-#defaceForm button {
-    width: 100%;
-    padding: 12px;
-    background-color: #ff4444;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    font-weight: bold;
-    cursor: pointer;
-    margin-top: 10px;
-    transition: background-color 0.3s;
-}
-
-#defaceForm button:hover {
-    background-color: #ff3333;
-}
-
-/* View Modal Styles */
-.detail-row {
-    display: flex;
-    margin-bottom: 15px;
-    padding-bottom: 15px;
-    border-bottom: 1px solid #333;
-}
-
-.detail-row:last-child {
-    border-bottom: none;
-    margin-bottom: 0;
-    padding-bottom: 0;
-}
-
-.detail-label {
-    font-weight: bold;
-    color: #ff4444;
-    min-width: 120px;
-}
-
-.detail-value {
+#previewFrame {
     flex: 1;
+    border: none;
+    background-color: #fff;
 }
 
-.detail-value a {
-    color: #4dabf7;
-    text-decoration: none;
-}
+/* Utility Classes */
+.hidden { display: none; }
 
-.detail-value a:hover {
-    text-decoration: underline;
-}
-
-/* Footer Styles */
-footer {
-    text-align: center;
-    margin-top: 30px;
-    padding-top: 20px;
-    border-top: 1px solid #333;
-    color: #666;
-    font-size: 0.9rem;
-}
-
-/* Responsive Styles */
+/* Responsive Adjustments */
 @media (max-width: 768px) {
-    .control-panel {
-        flex-direction: column;
-    }
-    
-    #searchInput {
-        min-width: 100%;
-    }
-    
-    th, td {
-        padding: 8px 10px;
-        font-size: 0.9rem;
-    }
-    
-    .modal-content {
-        margin: 10% auto;
+    .terminal {
         width: 95%;
+        height: 90vh;
     }
     
-    .detail-row {
-        flex-direction: column;
-    }
-    
-    .detail-label {
-        margin-bottom: 5px;
+    #defaceTable th, #defaceTable td {
+        padding: 6px 8px;
+        font-size: 0.9rem;
     }
 }
